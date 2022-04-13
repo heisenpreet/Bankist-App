@@ -79,20 +79,44 @@ const closeForm = document.querySelector('.form--close');
 const loanForm = document.querySelector('.form--loan');
 
 /////////////////////////////////////////////////
+// days ago function
+
+/////////////////////////////////////////////////
+const daysAgo = (date, locale) => {
+  const calcDateDiff = (date1, date2) =>
+    Math.round((date2 - date1) / (1000 * 60 * 60 * 24));
+
+  const daysPassed = calcDateDiff(date, new Date());
+
+  if (daysPassed === 0) return 'Today';
+  if (daysPassed === 1) return 'yesterday';
+  if (daysPassed === 2) return '2 days ago';
+
+  return new Intl.DateTimeFormat(locale).format(date);
+};
+
+/////////////////////////////////////////////////
 //NEWTOPIC MOVEMENTS DISPLAY FUNCTION   1
 
-const display = function (movements, sort = false) {
+const display = function (account, sort = false) {
   containerMovements.innerHTML = '';
 
-  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+  const movs = sort
+    ? account.movements.slice().sort((a, b) => a - b)
+    : account.movements;
 
   movs.forEach((mov, key) => {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+    const date = new Date(account.movementsDates[key]);
+
+    const displayDate = daysAgo(date, account.locale);
+
     const html = ` <div class="movements__row">
     <div class="movements__type movements__type--${type}">${
       key + 1
     } ${type}</div>
-    <div class="movements__date">3 days ago</div>
+    <div class="movements__date">${displayDate}</div>
     <div class="movements__value">${mov.toFixed(2)}</div>
   </div>
  
@@ -158,7 +182,7 @@ createUsername(accounts);
 
 const updateUI = function (account) {
   //display movement
-  display(account.movements);
+  display(account);
 
   //display balance
   balnce(account);
@@ -213,6 +237,11 @@ btnTransfer.addEventListener('click', function (e) {
     //doing the transfer
     currentAcc.movements.push(-transferAmount);
     receiverAccount.movements.push(transferAmount);
+
+    currentAcc.movementsDates.push(new Date().toISOString());
+
+    receiverAccount.movementsDates.push(new Date().toISOString());
+
     updateUI(currentAcc);
   }
 
@@ -252,20 +281,42 @@ btnLoan.addEventListener('click', function (e) {
     currentAcc.movements.some(amount => amount >= loanAmount * 0.1)
   ) {
     currentAcc.movements.push(loanAmount);
+    currentAcc.movementsDates.push(new Date().toISOString());
     updateUI(currentAcc);
   }
   loanForm.reset();
 });
 
 /////////////////////////////////////////////////
+// FAKE LOGIN
+currentAcc = account1;
+updateUI(currentAcc);
+containerApp.style.opacity = 1;
+/////////////////////////////////////////////////
 //NEWTOPIC SORTING FUNCTION   8
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
 
-  display(currentAcc.movements, !sorted);
+  display(currentAcc, !sorted);
   sorted = !sorted;
 });
+
+/////////////////////////////////////////////////
+// label date
+
+/////////////////////////////////////////////////
+
+const now = new Date();
+
+labelDate.textContent = new Intl.DateTimeFormat(navigator.language, {
+  day: 'numeric',
+  month: 'long',
+  year: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  weekday: 'short',
+}).format(now);
 
 /////////////////////////////////////////////////
 // LECTURES
