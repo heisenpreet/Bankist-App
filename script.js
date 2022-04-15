@@ -78,6 +78,8 @@ const transferForm = document.querySelector('.form--transfer');
 const closeForm = document.querySelector('.form--close');
 const loanForm = document.querySelector('.form--loan');
 
+let currentAcc, countdown;
+
 /////////////////////////////////////////////////
 // days ago function
 
@@ -93,6 +95,29 @@ const daysAgo = (date, locale) => {
   if (daysPassed === 2) return '2 days ago';
 
   return new Intl.DateTimeFormat(locale).format(date);
+};
+
+/////////////////////////////////////////////////
+//timer function
+
+/////////////////////////////////////////////////
+
+const setTimer = timer => {
+  const tick = () => {
+    const min = String(Math.floor(timer / 60)).padStart(2, 0);
+    const sec = String(Math.floor(timer % 60)).padStart(2, 0);
+
+    if (timer > 0) {
+      timer--;
+      labelTimer.textContent = `${min}:${sec}`;
+    } else {
+      labelWelcome.textContent = `Wrong Username/Passowrd`;
+      containerApp.style.opacity = 0;
+      clearInterval(countdown);
+    }
+  };
+  tick();
+  countdown = setInterval(tick, 1000);
 };
 
 /////////////////////////////////////////////////
@@ -199,7 +224,6 @@ const updateUI = function (account) {
 
 /////////////////////////////////////////////////
 //NEWTOPIC LOGIN FUNCTION   5
-let currentAcc;
 
 btnLogin.addEventListener('click', function (e) {
   e.preventDefault();
@@ -214,6 +238,11 @@ btnLogin.addEventListener('click', function (e) {
     containerApp.style.opacity = 1;
 
     updateUI(currentAcc);
+
+    if (countdown) {
+      clearInterval(countdown);
+    }
+    setTimer(300);
   } else {
     labelWelcome.textContent = `Wrong Username/Passowrd`;
     containerApp.style.opacity = 0;
@@ -248,6 +277,8 @@ btnTransfer.addEventListener('click', function (e) {
     receiverAccount.movementsDates.push(new Date().toISOString());
 
     updateUI(currentAcc);
+    clearInterval(countdown);
+    setTimer(300);
   }
 
   transferForm.reset();
@@ -289,7 +320,10 @@ btnLoan.addEventListener('click', function (e) {
       currentAcc.movements.push(loanAmount);
       currentAcc.movementsDates.push(new Date().toISOString());
       updateUI(currentAcc);
-    }, 2000);
+    }, 2000); //this timeout is an delay so that the laon amount is reflected after a dealy and not immdeitaelty
+
+    clearInterval(countdown);
+    setTimer(300);
   }
   loanForm.reset();
 });
