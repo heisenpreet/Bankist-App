@@ -112,12 +112,17 @@ const display = function (account, sort = false) {
 
     const displayDate = daysAgo(date, account.locale);
 
+    const formattedMov = new Intl.NumberFormat(account.locale, {
+      style: 'currency',
+      currency: 'USD',
+    }).format(mov);
+
     const html = ` <div class="movements__row">
     <div class="movements__type movements__type--${type}">${
       key + 1
     } ${type}</div>
     <div class="movements__date">${displayDate}</div>
-    <div class="movements__value">${mov.toFixed(2)}</div>
+    <div class="movements__value">${formattedMov}</div>
   </div>
  
 `;
@@ -280,9 +285,11 @@ btnLoan.addEventListener('click', function (e) {
     loanAmount > 0 &&
     currentAcc.movements.some(amount => amount >= loanAmount * 0.1)
   ) {
-    currentAcc.movements.push(loanAmount);
-    currentAcc.movementsDates.push(new Date().toISOString());
-    updateUI(currentAcc);
+    setTimeout(function () {
+      currentAcc.movements.push(loanAmount);
+      currentAcc.movementsDates.push(new Date().toISOString());
+      updateUI(currentAcc);
+    }, 2000);
   }
   loanForm.reset();
 });
@@ -309,14 +316,16 @@ btnSort.addEventListener('click', function (e) {
 
 const now = new Date();
 
-labelDate.textContent = new Intl.DateTimeFormat(navigator.language, {
-  day: 'numeric',
-  month: 'long',
-  year: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  weekday: 'short',
-}).format(now);
+setInterval(() => {
+  labelDate.textContent = new Intl.DateTimeFormat(navigator.language, {
+    day: 'numeric',
+    month: 'long',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    weekday: 'short',
+  }).format(new Date());
+}, 1000);
 
 /////////////////////////////////////////////////
 // LECTURES
